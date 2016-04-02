@@ -20,7 +20,7 @@ impl LinesIndex {
     }
 
     pub fn insert(&mut self, pos: u64, byte_count: u64) -> Option<u64> {
-        self.index.insert(pos as u64 + 1, byte_count)
+        self.index.insert(pos, byte_count)
     }
 
     pub fn clear(&mut self) {
@@ -56,7 +56,7 @@ impl LinesIndex {
                 Ok(line) => {
                     byte_count += line.as_bytes().len() as u64 + 1;
                     if (pos as u64 + 1) % self.granularity == 0 {
-                        self.index.insert(initial_pos + pos as u64 + 1, byte_count);
+                        self.insert(initial_pos + pos as u64 + 1, byte_count);
                     }
                     line_count += 1;
                 },
@@ -66,6 +66,18 @@ impl LinesIndex {
         self.line_count = line_count;
         self.byte_count = byte_count;
         Ok(line_count)
+    }
+
+    pub fn get_ref(&self) -> &BTreeMap<u64, u64> {
+        &self.index
+    }
+
+    pub fn get_mut(&mut self) -> &mut BTreeMap<u64, u64> {
+        &mut self.index
+    }
+
+    pub fn into_inner(self) -> BTreeMap<u64, u64> {
+        self.index
     }
 }
 
