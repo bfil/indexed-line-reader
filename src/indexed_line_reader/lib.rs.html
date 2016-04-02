@@ -296,7 +296,105 @@
 <span id="253">253</span>
 <span id="254">254</span>
 <span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
 </pre><pre class='rust '>
+<span class='doccomment'>//! # Indexed Line Reader</span>
+<span class='doccomment'>//! `IndexedLineReader` implements the `Seek` trait to allow seeking to specific lines</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! ## Index Granularity</span>
+<span class='doccomment'>//! `IndexedLineReader` just stores a byte count every `n` lines to allow fast seeking by line.</span>
+<span class='doccomment'>//! The granularity can be configured by passing the valut to the `IndexedLineReader` constructor.</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! There is a tradeoff to make between memory occupied by the index and the seek speed,</span>
+<span class='doccomment'>//! in general lower granularity means more line indexed and higher memory consumption, but fast seek time,</span>
+<span class='doccomment'>//! while a higher granularity slows down the seek time but less indexes are kept in memory.</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! As an example, if a file has 100,000,000 lines, usually a granularity of 100,000 gives a good tradeoff</span>
+<span class='doccomment'>//! between performance and memory consumption.</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! ## Example</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! ```no_run</span>
+<span class='doccomment'>//! extern crate indexed_line_reader;</span>
+<span class='doccomment'>//! # fn main() {</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! use indexed_line_reader::*;</span>
+<span class='doccomment'>//! use std::fs::*;</span>
+<span class='doccomment'>//! use std::io::{BufRead, BufReader, Seek, SeekFrom, Write};</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! /* Creates an IndexedLineReader for a file with index granularity of 100 */</span>
+<span class='doccomment'>//! let file_reader = OpenOptions::new().read(true).open(&quot;file.txt&quot;).expect(&quot;Unable to open file reader&quot;);</span>
+<span class='doccomment'>//! let mut indexed_line_reader = &amp;mut IndexedLineReader::new(BufReader::new(file_reader), 100);</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! /* Seeks to line 100 from the start of the file */</span>
+<span class='doccomment'>//! indexed_line_reader.seek(SeekFrom::Start(100));</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! /* Seeks forward by 50 lines from the current position on the file */</span>
+<span class='doccomment'>//! indexed_line_reader.seek(SeekFrom::Current(50));</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! /* Seeks backward by 50 lines from the current position on the file */</span>
+<span class='doccomment'>//! indexed_line_reader.seek(SeekFrom::Current(-50));</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! /* Seeks to the 100th line from the end on the file */</span>
+<span class='doccomment'>//! indexed_line_reader.seek(SeekFrom::End(100));</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! # }</span>
+<span class='doccomment'>//! ```</span>
+
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>collections</span>::<span class='ident'>BTreeMap</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>io</span>::{<span class='ident'>BufRead</span>, <span class='ident'>Error</span>, <span class='ident'>Read</span>, <span class='ident'>Seek</span>, <span class='ident'>SeekFrom</span>};
 
@@ -319,7 +417,7 @@
     }
 
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>insert</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>pos</span>: <span class='ident'>u64</span>, <span class='ident'>byte_count</span>: <span class='ident'>u64</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>u64</span><span class='op'>&gt;</span> {
-        <span class='self'>self</span>.<span class='ident'>index</span>.<span class='ident'>insert</span>(<span class='ident'>pos</span> <span class='kw'>as</span> <span class='ident'>u64</span> <span class='op'>+</span> <span class='number'>1</span>, <span class='ident'>byte_count</span>)
+        <span class='self'>self</span>.<span class='ident'>index</span>.<span class='ident'>insert</span>(<span class='ident'>pos</span>, <span class='ident'>byte_count</span>)
     }
 
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>clear</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) {
@@ -355,7 +453,7 @@
                 <span class='prelude-val'>Ok</span>(<span class='ident'>line</span>) <span class='op'>=&gt;</span> {
                     <span class='ident'>byte_count</span> <span class='op'>+=</span> <span class='ident'>line</span>.<span class='ident'>as_bytes</span>().<span class='ident'>len</span>() <span class='kw'>as</span> <span class='ident'>u64</span> <span class='op'>+</span> <span class='number'>1</span>;
                     <span class='kw'>if</span> (<span class='ident'>pos</span> <span class='kw'>as</span> <span class='ident'>u64</span> <span class='op'>+</span> <span class='number'>1</span>) <span class='op'>%</span> <span class='self'>self</span>.<span class='ident'>granularity</span> <span class='op'>==</span> <span class='number'>0</span> {
-                        <span class='self'>self</span>.<span class='ident'>index</span>.<span class='ident'>insert</span>(<span class='ident'>initial_pos</span> <span class='op'>+</span> <span class='ident'>pos</span> <span class='kw'>as</span> <span class='ident'>u64</span> <span class='op'>+</span> <span class='number'>1</span>, <span class='ident'>byte_count</span>);
+                        <span class='self'>self</span>.<span class='ident'>insert</span>(<span class='ident'>initial_pos</span> <span class='op'>+</span> <span class='ident'>pos</span> <span class='kw'>as</span> <span class='ident'>u64</span> <span class='op'>+</span> <span class='number'>1</span>, <span class='ident'>byte_count</span>);
                     }
                     <span class='ident'>line_count</span> <span class='op'>+=</span> <span class='number'>1</span>;
                 },
@@ -365,6 +463,18 @@
         <span class='self'>self</span>.<span class='ident'>line_count</span> <span class='op'>=</span> <span class='ident'>line_count</span>;
         <span class='self'>self</span>.<span class='ident'>byte_count</span> <span class='op'>=</span> <span class='ident'>byte_count</span>;
         <span class='prelude-val'>Ok</span>(<span class='ident'>line_count</span>)
+    }
+
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_ref</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='ident'>BTreeMap</span><span class='op'>&lt;</span><span class='ident'>u64</span>, <span class='ident'>u64</span><span class='op'>&gt;</span> {
+        <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>index</span>
+    }
+
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>BTreeMap</span><span class='op'>&lt;</span><span class='ident'>u64</span>, <span class='ident'>u64</span><span class='op'>&gt;</span> {
+        <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>.<span class='ident'>index</span>
+    }
+
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>into_inner</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>BTreeMap</span><span class='op'>&lt;</span><span class='ident'>u64</span>, <span class='ident'>u64</span><span class='op'>&gt;</span> {
+        <span class='self'>self</span>.<span class='ident'>index</span>
     }
 }
 
