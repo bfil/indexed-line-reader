@@ -1,3 +1,46 @@
+//! # Indexed Line Reader
+//! `IndexedLineReader` implements the `Seek` trait to allow seeking to specific lines
+//!
+//! ## Index Granularity
+//! `IndexedLineReader` just stores a byte count every `n` lines to allow fast seeking by line.
+//! The granularity can be configured by passing the valut to the `IndexedLineReader` constructor.
+//!
+//! There is a tradeoff to make between memory occupied by the index and the seek speed,
+//! in general lower granularity means more line indexed and higher memory consumption, but fast seek time,
+//! while a higher granularity slows down the seek time but less indexes are kept in memory.
+//!
+//! As an example, if a file has 100,000,000 lines, usually a granularity of 100,000 gives a good tradeoff
+//! between performance and memory consumption.
+//!
+//! ## Example
+//!
+//! ```no_run
+//! extern crate indexed_line_reader;
+//! # fn main() {
+//!
+//! use indexed_line_reader::*;
+//! use std::fs::*;
+//! use std::io::{BufRead, BufReader, Seek, SeekFrom, Write};
+//!
+//! /* Creates an IndexedLineReader for a file with index granularity of 100 */
+//! let file_reader = OpenOptions::new().read(true).open("file.txt").expect("Unable to open file reader");
+//! let mut indexed_line_reader = &mut IndexedLineReader::new(BufReader::new(file_reader), 100);
+//!
+//! /* Seeks to line 100 from the start of the file */
+//! indexed_line_reader.seek(SeekFrom::Start(100));
+//!
+//! /* Seeks forward by 50 lines from the current position on the file */
+//! indexed_line_reader.seek(SeekFrom::Current(50));
+//!
+//! /* Seeks backward by 50 lines from the current position on the file */
+//! indexed_line_reader.seek(SeekFrom::Current(-50));
+//!
+//! /* Seeks to the 100th line from the end on the file */
+//! indexed_line_reader.seek(SeekFrom::End(100));
+//!
+//! # }
+//! ```
+
 use std::collections::BTreeMap;
 use std::io::{BufRead, Error, Read, Seek, SeekFrom};
 
