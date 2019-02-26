@@ -1,6 +1,6 @@
 [package]
 name = "indexed-line-reader"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Bruno Filippone <bruno.filippone@b-fil.com>"]
 description = "Allows seeking a file to a specific line"
 keywords = ["indexed", "file", "line", "reader"]

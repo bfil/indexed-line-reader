@@ -63,6 +63,8 @@ impl LinesIndex {
     }
 
     pub fn insert(&mut self, pos: u64, byte_count: u64) -> Option<u64> {
+        self.line_count = pos;
+        self.byte_count = byte_count;
         self.index.insert(pos, byte_count)
     }
 
@@ -86,7 +88,7 @@ impl LinesIndex {
         self.index.keys().map(|&x| x).max()
     }
 
-    pub fn compute<T: BufRead + Seek>(&mut self, mut reader: &mut T) -> Result<u64, Error> {
+    pub fn compute<T: BufRead + Seek>(&mut self, reader: &mut T) -> Result<u64, Error> {
         let initial_pos = self.last_indexed_pos().unwrap_or(0);
         let mut line_count = initial_pos;
         let mut byte_count = self.byte_count_at_pos(&line_count).unwrap_or(0);
@@ -293,7 +295,7 @@ mod tests {
         }
 
         let file_reader = OpenOptions::new().read(true).open(log_name).expect("Unable to open file reader");
-        let mut line_reader = &mut IndexedLineReader::new(BufReader::new(file_reader), 100);
+        let line_reader = &mut IndexedLineReader::new(BufReader::new(file_reader), 100);
 
         line_reader.compute_index().expect("Unable to compute index");
 
