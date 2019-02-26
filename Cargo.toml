@@ -1,7 +1,7 @@
 [package]
 name = "indexed-line-reader"
 version = "0.2.1"
-authors = ["Bruno Filippone <bruno.filippone@b-fil.com>"]
+authors = ["Bruno Filippone <bruno@bfil.io>"]
 description = "Allows seeking a file to a specific line"
 keywords = ["indexed", "file", "line", "reader"]
 repository = "https://github.com/bfil/indexed-line-reader"
